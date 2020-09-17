@@ -14,6 +14,12 @@ package edu.nmsu.cs.webserver;
  * @author Jon Cook, Ph.D.
  * 
  **/
+
+/**
+ * This simple web server was modified to have HTML file delivery work, a 404 response and tag substitution.
+ * Modified by Meagan Waldo
+ * Last date modified: 09/16/20
+ **/
 import java.net.ServerSocket;
 import java.net.Socket;
 
