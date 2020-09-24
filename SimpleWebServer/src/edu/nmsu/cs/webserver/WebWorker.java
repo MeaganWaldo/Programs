@@ -24,7 +24,7 @@ package edu.nmsu.cs.webserver;
 /**
  * This simple web server was modified to have HTML file delivery work, a 404 response and tag substitution.
  * Modified by Meagan Waldo
- * Last date modified: 09/16/20
+ * Last date modified: 09/24/20
  **/
 
 import java.io.BufferedReader;
@@ -34,12 +34,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Scanner;
 import java.util.TimeZone;
 
 public class WebWorker implements Runnable
 {
-
+	int code; // This will contain the HTTP response code which is 200 or 404.
 	private Socket socket;
 
 	/**
@@ -61,20 +63,29 @@ public class WebWorker implements Runnable
 		try
 		{
 			String neededFileName; // This will be the name of the file requested.
-			
+
 			InputStream is = socket.getInputStream();
 			OutputStream os = socket.getOutputStream();
-		    
+
 			neededFileName = readHTTPRequest(is); // Initializes neededFileName with the name of the file.
-			File neededFile = null; // This represents what is in the file.
-		    
-			// If the neededFileName exists then the file neededfile has its path set to the string that is neededFileName.
+
+			File file = new File(neededFileName); // Creates a file instance using the requested file name.
+
+			// If the neededFileName is not null then check for the file.
 			if(neededFileName != null) {
-				neededFile = new File(neededFileName);
+				
+				// If the file is found then the code is 200. Else the code is 404.
+				if(file.exists() && !file.isDirectory()) {
+					code = 200;
+				
+				} // end of if
+				else {
+					code = 404;
+				} // end of else
 			} // end of if
-			
-			writeHTTPHeader(os, "text/html", neededFile);
-			writeContent(os, neededFile);
+
+			writeHTTPHeader(os, "text/html");
+			writeContent(os, file);
 			os.flush();
 			socket.close();
 		}
@@ -82,7 +93,8 @@ public class WebWorker implements Runnable
 		{
 			System.err.println("Output error: " + e);
 		}
-		System.err.println("Done handling connection.");
+		
+		System.err.println("Done handling connection.");	
 		return;
 	}
 
@@ -95,7 +107,9 @@ public class WebWorker implements Runnable
 	{
 		String line;
 		String neededFile = null; // String that will hold the name of the file requested.
+		
 		BufferedReader r = new BufferedReader(new InputStreamReader(is));
+		
 		while (true)
 		{
 			try
@@ -104,12 +118,12 @@ public class WebWorker implements Runnable
 					Thread.sleep(1);
 				line = r.readLine();
 				System.err.println("Request line: (" + line + ")");
-				
+
 				// If the line starts with GET then you have found the name of the file requested.
 				if(line.startsWith("GET")) {
 					neededFile = line.substring(5, line.length() - 9); // Sets neededFile to the name of the requested file.
 				} // end of if
-				
+
 				if (line.length() == 0)
 					break;
 			}
@@ -129,22 +143,21 @@ public class WebWorker implements Runnable
 	 *          is the OutputStream object to write to
 	 * @param contentType
 	 *          is the string MIME content type (e.g. "text/html")
-	 * @param neededFile 
 	 **/
-	private void writeHTTPHeader(OutputStream os, String contentType, File neededFile) throws Exception
+	private void writeHTTPHeader(OutputStream os, String contentType) throws Exception
 	{
 		Date d = new Date();
 		DateFormat df = DateFormat.getDateTimeInstance();
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
-		
+
 		// If the neededFile exists then the code is 200 else it is a 404 error.
-		if(neededFile != null) {
-		os.write("HTTP/1.1 200 OK\n".getBytes());
+		if(code == 200) {
+			os.write("HTTP/1.1 200 OK\n".getBytes());
 		} // end of if
 		else {
-	    os.write("HTTP/1.1 404 Not Found\n".getBytes());	
+			os.write("HTTP/1.1 404 Not Found\n".getBytes());	
 		} // end of else
-		
+
 		os.write("Date: ".getBytes());
 		os.write((df.format(d)).getBytes());
 		os.write("\n".getBytes());
@@ -169,18 +182,49 @@ public class WebWorker implements Runnable
 	 **/
 	private void writeContent(OutputStream os, File neededFile) throws Exception
 	{
-		// if the neededFile exists write out to the page along with the path. Else 404.
-		if (neededFile != null) {
-			os.write("<html><head></head><body>\n".getBytes());
-			os.write(new String("<h1>localfile:" + neededFile.getAbsolutePath() + "</h1>").getBytes()); // Prints out the path to the file.
-			os.write("<h3>My web server works!</h3>\n".getBytes());
-			os.write("</body></html>\n".getBytes());
-	    } // end of if
+		
+		Date dateNow = new Date(); // This gets the current date.
+		SimpleDateFormat formatter = new SimpleDateFormat("MMMM dd, yyyy"); // This formats the date.
+        
+		String currentDate = formatter.format(dateNow); // The current date formatted.
+		String date = "<cs371date>"; // The tag for the date.
+		String server = "<cs371server>"; // the tag for the server identification.
+		String serverInfo = "Meagan Waldo's Server"; // The server identification.
+		
+		
+		// if the code is 200 print out what is in the file. Else it is a 404.
+		if (code == 200) {
+			
+			Scanner scan = new Scanner(neededFile); // Scanner for the file.
+
+			// While the file has a next line scan it in and check to see if there are any tags.
+			while (scan.hasNextLine())  {
+				String newLine = scan.nextLine(); // The next line.
+		    
+				// If there are one or both tags then update them to be the correct information.
+				if(newLine.contains(date) || newLine.contains(server)) {
+					
+					// If the tag for the date exists then update the string with the date.
+					if(newLine.contains(date)) {
+						newLine = newLine.replaceAll(date, currentDate);
+					} // end of if
+					
+					// If the tag for the server identification exists then update the string with the server identification.
+		        	if(newLine.contains(server)) {
+		        		newLine = newLine.replaceAll(server, serverInfo);
+		        	} // end of if
+		        	
+		       	    os.write(newLine.getBytes()); // Write out the next line with the updated tags.
+		        } // end of if
+		        else {
+		        	os.write(new String(newLine).getBytes()); // There were no tags so just write out the next line.
+		        } // end of else  
+			} // end of while
+		} // end of if
 		else {
 			os.write("<html><head></head><body>\n".getBytes());
-			os.write("<h3>404 Not Found</h3>\n".getBytes()); // Prints out 404.
+			os.write("<h3>404 Not Found</h3>\n".getBytes()); // Prints out the 404 error.
 			os.write("</body></html>\n".getBytes());
 		} // end of else
 	}
-
 } // end class
