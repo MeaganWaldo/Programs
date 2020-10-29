@@ -1,6 +1,6 @@
 <project name="SimpleWebServer" default="cleanrun" basedir=".">
 	<description>
-		Buildfile for the SimpleWebServer. By default runs clean and build. Can also be used to launch with default prot (8080).
+		Buildfile for the SimpleWebServer. By default runs clean and build. Can also be used to launch with default port (8080).
 	</description>
 	<property name="src" location="src/"/>
 	<property name="bin" location="bin/"/>
@@ -14,7 +14,7 @@
 		<javac srcdir="${src}" destdir="${bin}"/>
 	</target>
 
-	<target name="cleanrun" depends="clean, compile"/>
+	<target name="cleanrun" depends="clean, compile, run"/>
 
 	<target name="run" description="Launches SimpleWebServer on port 8080.">
 		<java classname="edu.nmsu.cs.webserver.WebServer" classpath="${bin}" fork="true" >
