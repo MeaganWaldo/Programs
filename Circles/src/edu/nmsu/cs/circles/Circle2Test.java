@@ -72,7 +72,29 @@ public class Circle2Test
 		Assert.assertTrue(p.x == 1 && p.y == 2);
 	}
 	
+	//
+	// Test a simple positive scaling.
+	//
+	@Test
+	public void scalePositive()
+	{
+		double r;
+		System.out.println("Running test scalePositive.");
+		r = circle2.scale(2.0);
+		Assert.assertTrue(r == 6);
+	}
 	
+	//
+	// Test a simple zero scaling.
+	//
+	@Test
+	public void scaleZero()
+	{
+		double r;
+		System.out.println("Running test scaleNegative.");
+		r = circle2.scale(0);
+		Assert.assertTrue(r == 0);
+	}
 	
 	
 	/***

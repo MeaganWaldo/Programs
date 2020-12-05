@@ -37,7 +37,7 @@ public abstract class Circle
 	 **/
 	public double scale(double factor)
 	{
-		radius = radius + factor;
+		radius = radius * factor; // Error fixed. It was adding the radius and factor instead of multiplying so I changed the + to *. 
 		return radius;
 	}
 
