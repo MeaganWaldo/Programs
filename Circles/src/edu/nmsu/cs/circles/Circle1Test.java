@@ -43,8 +43,8 @@ public class Circle1Test
 	{
 		Point p;
 		System.out.println("Running test simpleMove.");
-		p = circle1.moveBy(1, 1);
-		Assert.assertTrue(p.x == 2 && p.y == 3);
+		p = circle1.moveBy(1, 2);
+		Assert.assertTrue(p.x == 2 && p.y == 4);
 	}
 
 	//
@@ -55,10 +55,34 @@ public class Circle1Test
 	{
 		Point p;
 		System.out.println("Running test simpleMoveNeg.");
-		p = circle1.moveBy(-1, -1);
-		Assert.assertTrue(p.x == 0 && p.y == 1);
+		p = circle1.moveBy(-1, -3);
+		Assert.assertTrue(p.x == 0 && p.y == -1);
 	}
 
+	//
+	// Test a simple zero move
+	//
+	@Test
+	public void simpleMoveZero()
+	{
+		Point p;
+		System.out.println("Running test simpleMoveZero.");
+		p = circle1.moveBy(0, 0);
+		Assert.assertTrue(p.x == 1 && p.y == 2);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/***
 	 * NOT USED public static void main(String args[]) { try { org.junit.runner.JUnitCore.runClasses(
 	 * java.lang.Class.forName("Circle1Test")); } catch (Exception e) { System.out.println("Exception:
